@@ -6,6 +6,8 @@ const app = express();
 
 const { readFile, writeFile } = fs;
 
+global.fileName = "accounts.json"
+
 app.use(express.json());
 
 app.use("/account", accountsRouter);
@@ -14,7 +16,7 @@ const port = 3000;
 
 app.listen(port, async () => {
   try {
-    await readFile("accounts.json");
+    await readFile(global.fileName);
     console.log("API started");
   } catch (error) {
     const initialJson = {
@@ -22,7 +24,7 @@ app.listen(port, async () => {
       accounts: [],
     };
     try {
-      await writeFile("accounts.json", JSON.stringify(initialJson));
+      await writeFile(global.fileName, JSON.stringify(initialJson));
       console.log("API started and file created");
     } catch (error) {
       console.log(error);
