@@ -33,4 +33,17 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/:id", async (req, res) => {
+  try{
+    const data = JSON.parse(await readFile(global.fileName))
+    const account = data.accounts.find((account) => {
+      return account.id === parseInt(req.params.id)
+    })
+
+    res.send(account)
+  }catch(e){
+
+  }
+});
+
 export default router;
