@@ -21,10 +21,10 @@ app.listen(port, async () => {
       nextId: 1,
       accounts: [],
     };
-    try{
+    try {
       await writeFile("accounts.json", JSON.stringify(initialJson));
       console.log("API started and file created");
-    }catch(error){
+    } catch (error) {
       console.log(error);
     }
   }
