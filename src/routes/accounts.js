@@ -2,6 +2,7 @@ import express from "express";
 
 import { promises as fs, write } from "fs";
 
+
 const { readFile, writeFile } = fs;
 
 const router = express.Router();
@@ -17,7 +18,10 @@ router.post("/", async (req, res, next) => {
     data.accounts.push(account);
 
     await writeFile(global.fileName, JSON.stringify(data, null, 2));
+    global.logger.info(`POST /account - ${JSON.stringify(account)}`)
     res.send(account);
+
+    
   } catch (error) {
     next(error)
   }
@@ -27,7 +31,11 @@ router.get("/", async (req, res, next) => {
   try {
     const data = JSON.parse(await readFile(global.fileName));
     delete data.nextId;
+    global.logger.info("GET /account")
+
     res.send(data);
+
+    
   } catch (error) {
     next(error)
   }
@@ -38,8 +46,10 @@ router.get("/:id", async (req, res, next) => {
     const data = JSON.parse(await readFile(global.fileName));
     const account = data.accounts.find((account) => {
       return account.id === parseInt(req.params.id);
+      
     });
 
+    global.logger.info(`GET /account/${req.params.id}`)
     res.send(account);
   } catch (error) {
     next(error)
@@ -53,6 +63,7 @@ router.delete("/:id", async (req, res, next) => {
       (account) => account.id !== parseInt(req.params.id)
     );
     await writeFile(global.fileName, JSON.stringify(data, null, 2));
+    global.logger.info(`DELETE /account/${req.params.id}- ${JSON.stringify(account)}`)
     res.end();
   } catch (error) {
     next(error)
@@ -69,7 +80,7 @@ router.put("/", async (req, res, next) => {
     data.accounts[index] = account;
 
     await writeFile(global.fileName, JSON.stringify(data, null, 2));
-
+    global.logger.info(`PUT /account - ${JSON.stringify(account)}`)
     res.end();
   } catch (error) {
     next(error)
@@ -86,7 +97,7 @@ router.patch("/updateBalance", async (req, res) => {
     data.accounts[index].balance = account.balance;
 
     await writeFile(global.fileName, JSON.stringify(data, null, 2));
-
+    global.logger.info(`PATCH /account/updateBalance - ${JSON.stringify(account)}`)
     res.end();
   } catch (error) {
     next(error)
@@ -94,7 +105,7 @@ router.patch("/updateBalance", async (req, res) => {
 });
 
 router.use((error, req, res, next) => {
-  console.log(error)
+  global.logger.error(`${req.method} ${req.baseUrl} - ${error.message}`)
   res.status(400).send({ error: error.message });
 })
 

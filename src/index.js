@@ -1,8 +1,29 @@
 import express from "express";
+import winston from "winston";
 import accountsRouter from "./routes/accounts.js";
-import { promises as fs, write } from "fs";
+import { promises as fs } from "fs";
+
 
 const app = express();
+
+const {combine, timestamp, label, printf} = winston.format;
+const myFormat = printf(({level, message, label, timestamp}) => {
+  return `${timestamp} [${label}] ${level} : ${message}`
+})
+
+global.logger = winston.createLogger({
+  level: "silly", 
+  transports: [
+    new (winston.transports.Console)(),
+    new (winston.transports.File)({filename: "my-bank-api.log"})
+  ],
+  format: combine(
+    label({label:"mybank-api"}),
+    timestamp(),
+    myFormat
+)
+  
+})
 
 const { readFile, writeFile } = fs;
 
@@ -17,7 +38,7 @@ const port = 3000;
 app.listen(port, async () => {
   try {
     await readFile(global.fileName);
-    console.log("API started");
+    global.logger.info("API started");
   } catch (error) {
     const initialJson = {
       nextId: 1,
@@ -25,9 +46,9 @@ app.listen(port, async () => {
     };
     try {
       await writeFile(global.fileName, JSON.stringify(initialJson));
-      console.log("API started and file created");
+      global.logger.info("API started and file created");
     } catch (error) {
-      console.log(error);
+      global.logger.error(error);
     }
   }
 });
